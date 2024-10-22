@@ -9,6 +9,7 @@ const ETH_VERIFY_API_KEY = process.env.ETH_VERIFY_API_KEY
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.27",
+  defaultNetwork: "hardhat",
   networks: {
     sepolia: {
       url: `https://sepolia.infura.io/v3/${SEPOLIA_RPC_URL}`,

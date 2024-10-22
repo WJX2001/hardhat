@@ -5,18 +5,18 @@ pragma solidity 0.8.27;
 // 2. 记录投资人并且查看
 // 3. 在锁定期内，达到目标值，生产商可以提款
 // 4. 在锁定期内，没有达到目标值，投资人可以退款
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from '@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol';
 
 contract FundMe {
     mapping(address => uint256) public funderToAmount;
 
     // 相当于100美元
-    uint256 MINIMUM_VALUE = 100 * 10**18; // wei
+    uint256 MINIMUM_VALUE = 100 * 10 ** 18; // wei
 
     AggregatorV3Interface internal dataFeed;
 
     // 设定目标值
-    uint256 constant TARGET = 1000 * 10**18;
+    uint256 constant TARGET = 1000 * 10 ** 18;
 
     address public owner;
 
@@ -28,20 +28,21 @@ contract FundMe {
 
     bool public getFundSuccess = false;
 
-    constructor(uint256 _lockTime) {
-        dataFeed = AggregatorV3Interface(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
-        );
+    constructor(uint256 _lockTime, address dataFeedAddr) {
+        dataFeed = AggregatorV3Interface(dataFeedAddr);
+        // dataFeed = AggregatorV3Interface(
+        //     0x694AA1769357215DE4FAC081bf1f309aDC325306
+        // );
         owner = msg.sender;
         deploymentTimestamp = block.timestamp;
         lockTime = _lockTime;
     }
 
     function fund() external payable {
-        require(convertEthToUsd(msg.value) >= MINIMUM_VALUE, "send more ETH");
+        require(convertEthToUsd(msg.value) >= MINIMUM_VALUE, 'send more ETH');
         require(
             block.timestamp < deploymentTimestamp + lockTime,
-            "window is closed"
+            'window is closed'
         );
         funderToAmount[msg.sender] = msg.value;
     }
@@ -58,13 +59,11 @@ contract FundMe {
         return answer;
     }
 
-    function convertEthToUsd(uint256 ethAmount)
-        internal
-        view
-        returns (uint256)
-    {
+    function convertEthToUsd(
+        uint256 ethAmount
+    ) internal view returns (uint256) {
         uint256 ethPrice = uint256(getChainlinkDataFeedLatestAnswer());
-        return (ethAmount * ethPrice) / (10**8);
+        return (ethAmount * ethPrice) / (10 ** 8);
         // 前面是 10的18此方 后面是 10的八次方 所以需要除以10的八次方
         // ETH / USD precision = 10 ** 8
         // X / ETH presion = 10 ** 18
@@ -76,14 +75,14 @@ contract FundMe {
 
     function getFund() external onlyOwner windowClosed {
         require(
-            convertEthToUsd(address(this).balance) >= TARGET, /*wei*/
-            "Target is not reached"
+            convertEthToUsd(address(this).balance) >= TARGET /*wei*/,
+            'Target is not reached'
         );
         bool success;
         (success, ) = payable(msg.sender).call{value: address(this).balance}(
-            ""
+            ''
         );
-        require(success, "transfer tx failed");
+        require(success, 'transfer tx failed');
         funderToAmount[msg.sender] = 0;
         getFundSuccess = true;
     }
@@ -91,20 +90,26 @@ contract FundMe {
     function refund() external windowClosed {
         require(
             convertEthToUsd(address(this).balance) < TARGET,
-            "target is reached"
+            'target is reached'
         );
-        require(funderToAmount[msg.sender] != 0, "there is no fund for you");
+        require(funderToAmount[msg.sender] != 0, 'there is no fund for you');
 
         bool success;
         (success, ) = payable(msg.sender).call{
             value: funderToAmount[msg.sender]
-        }("");
-        require(success, "transfer tx failed");
+        }('');
+        require(success, 'transfer tx failed');
         funderToAmount[msg.sender] = 0;
     }
 
-    function setFunderToAmount(address funder, uint256 amountToUpdate) external {
-        require(msg.sender == erc20Addr, "you do not have permission to call this function");
+    function setFunderToAmount(
+        address funder,
+        uint256 amountToUpdate
+    ) external {
+        require(
+            msg.sender == erc20Addr,
+            'you do not have permission to call this function'
+        );
         funderToAmount[funder] = amountToUpdate;
     }
 
@@ -115,13 +120,13 @@ contract FundMe {
     modifier windowClosed() {
         require(
             block.timestamp >= deploymentTimestamp + lockTime,
-            "window is closed"
+            'window is closed'
         );
         _;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, "not owner");
+        require(msg.sender == owner, 'not owner');
         _;
     }
 }
