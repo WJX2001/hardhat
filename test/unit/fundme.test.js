@@ -85,14 +85,17 @@ describe('test fundme contract', async function () {
       .to.be.revertedWith("Target is not reached")
   })
 
-  it("window closed, target reached, getFund success", async function () {
-    await fundMe.fund({ value: ethers.parseEther("1") })
-    await helpers.time.increase(200)
-    await helpers.mine()
-    await expect(fundMe.getFund())
-      .to.emit(fundMe, "FundWithdrawByOwner")
-      .withArgs(ethers.parseEther("1"))
-  })
+  it("window closed, target reached, getFund success", 
+    async function() {
+        await fundMe.fund({value: ethers.parseEther("1")})
+        // make sure the window is closed
+        await helpers.time.increase(200)
+        await helpers.mine()   
+        await expect(fundMe.getFund())
+            .to.emit(fundMe, "FundWithdrawByOwner")
+            .withArgs(ethers.parseEther("1"))
+    }
+)
 
   // refund 
   // windowClosed, target not reached, funder has balance
