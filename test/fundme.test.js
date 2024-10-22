@@ -1,13 +1,18 @@
 const { assert } = require('chai')
-const { ethers } = require('hardhat')
+const { ethers, deployments, getNamedAccounts } = require('hardhat')
 
 describe('test fundme contract', async function () {
+  let fundMe
+  let firstAccount
+  beforeEach(async function () {
+    await deployments.fixture(['all']) // 部署了所有tag为all的合约
+    firstAccount = (await getNamedAccounts()).firstAccount
+    const fundMeDeployMent = await deployments.get('FundMe')
+    fundMe = await ethers.getContractAt("FundMe", fundMeDeployMent.address)
+  })
+
   it('test if owner is msg.sender', async function () {
-    // 获取部署合约的交易人
-    const [firstAccount] = await ethers.getSigners()
-    const fundMeFactory = await ethers.getContractFactory('FundMe')
-    const fundMe = await fundMeFactory.deploy(180)
     await fundMe.waitForDeployment()
-    assert.equal((await fundMe.owner()), firstAccount.address)
+    assert.equal(await fundMe.owner(), firstAccount)
   })
 })
