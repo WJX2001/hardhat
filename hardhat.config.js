@@ -13,6 +13,9 @@ const ETH_VERIFY_API_KEY = process.env.ETH_VERIFY_API_KEY
 module.exports = {
   solidity: "0.8.27",
   defaultNetwork: "hardhat",
+  mocha:{
+    timeout: 300000
+  },
   networks: {
     sepolia: {
       url: `https://sepolia.infura.io/v3/${SEPOLIA_RPC_URL}`,
