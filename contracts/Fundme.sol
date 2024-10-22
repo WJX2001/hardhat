@@ -28,6 +28,10 @@ contract FundMe {
 
     bool public getFundSuccess = false;
 
+    event FundWithdrawByOwner(uint256);
+
+    event RefundByFunder(address, uint256);
+
     constructor(uint256 _lockTime, address dataFeedAddr) {
         dataFeed = AggregatorV3Interface(dataFeedAddr);
         // dataFeed = AggregatorV3Interface(
@@ -79,12 +83,15 @@ contract FundMe {
             'Target is not reached'
         );
         bool success;
+        uint256 balance = address(this).balance;
         (success, ) = payable(msg.sender).call{value: address(this).balance}(
             ''
         );
         require(success, 'transfer tx failed');
         funderToAmount[msg.sender] = 0;
         getFundSuccess = true;
+        // emit event
+        emit FundWithdrawByOwner(balance);
     }
 
     function refund() external windowClosed {
@@ -93,13 +100,12 @@ contract FundMe {
             'target is reached'
         );
         require(funderToAmount[msg.sender] != 0, 'there is no fund for you');
-
+        uint256 balance = funderToAmount[msg.sender];
         bool success;
-        (success, ) = payable(msg.sender).call{
-            value: funderToAmount[msg.sender]
-        }('');
+        (success, ) = payable(msg.sender).call{value: balance}('');
         require(success, 'transfer tx failed');
         funderToAmount[msg.sender] = 0;
+        emit RefundByFunder(msg.sender, balance);
     }
 
     function setFunderToAmount(
@@ -120,13 +126,16 @@ contract FundMe {
     modifier windowClosed() {
         require(
             block.timestamp >= deploymentTimestamp + lockTime,
-            'window is closed'
+            'window is not closed'
         );
         _;
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner, 'not owner');
+        require(
+            msg.sender == owner,
+            'this function can only be called by owner'
+        );
         _;
     }
 }
