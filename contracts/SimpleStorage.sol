@@ -1,7 +1,7 @@
 // I'm a comment!
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.7;
+pragma solidity 0.8.27;
 
 contract SimpleStorage {
     uint256 favoriteNumber;
