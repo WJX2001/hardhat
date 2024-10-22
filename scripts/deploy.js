@@ -4,7 +4,7 @@ async function main () {
   // create factory
   const fundMeFactory = await ethers.getContractFactory('FundMe')
   // deploy contract from factory
-  console.log("contract deploying...")
+    console.log("contract deploying...")
   const fundMe = await fundMeFactory.deploy(300)
   await fundMe.waitForDeployment()
   console.log(
